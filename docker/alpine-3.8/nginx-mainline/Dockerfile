@@ -85,7 +85,7 @@ ARG NGINX_PGPKEY=520A9993A1C052F8
 ARG NGINX_BUILD_CONFIG="\
         --prefix=/etc/nginx \
         --sbin-path=/usr/sbin/nginx \
-		#--modules-path=/usr/lib/nginx/modules \
+        --modules-path=/usr/lib/nginx/modules \
         --conf-path=/etc/nginx/nginx.conf \
         --error-log-path=/var/log/nginx/error.log \
         --http-log-path=/var/log/nginx/access.log \
@@ -93,9 +93,7 @@ ARG NGINX_BUILD_CONFIG="\
         --lock-path=/var/run/nginx.lock \
         --http-client-body-temp-path=/var/cache/nginx/client_temp \
         --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-		#--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-		#--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-		#--http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+		--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
         --user=nginx \
         --group=nginx \
         --with-threads \
@@ -103,7 +101,27 @@ ARG NGINX_BUILD_CONFIG="\
         --with-http_v2_module \
         --with-http_ssl_module \
         --with-http_realip_module \
-		#-with-compat \
+
+		--without-http_empty_gif_module \
+		--without-http_geo_module \
+		--without-http_grpc_module \
+		--without-http_map_module \
+		--without-http_memcached_module \
+		--without-http_mirror_module \
+		--without-http_referer_module \
+		--without-http_split_clients_module \
+		--without-http_upstream_hash_module \
+		--without-http_upstream_ip_hash_module \
+		--without-http_upstream_keepalive_module \
+		--without-http_upstream_least_conn_module \
+		--without-http_upstream_random_module \
+		--without-http_scgi_module \
+		--without-http_uwsgi_module \
+
+		#--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+		#--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+		#--http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+		#--with-compat \
 		#--with-http_addition_module \
 		#--with-http_sub_module \
 		#--with-http_dav_module \
@@ -126,25 +144,6 @@ ARG NGINX_BUILD_CONFIG="\
 		#--with-http_slice_module \
 		#--with-mail=dynamic \
 		#--with-mail_ssl_module \
-		--without-http_empty_gif_module \
-		--without-http_geo_module \
-		--without-http_grpc_module \
-		--without-http_limit_conn_module \
-		--without-http_limit_req_module \
-		--without-http_map_module \
-		--without-http_memcached_module \
-		--without-http_mirror_module \
-		--without-http_proxy_module \
-		--without-http_referer_module \
-		--without-http_split_clients_module \
-		--without-http_upstream_hash_module \
-		--without-http_upstream_ip_hash_module \
-		--without-http_upstream_keepalive_module \
-		--without-http_upstream_least_conn_module \
-		--without-http_upstream_random_module \
-		--without-http_upstream_zone_module \
-		--without-http_scgi_module \
-		--without-http_uwsgi_module \
     "
 
 RUN apk add --no-cache \
