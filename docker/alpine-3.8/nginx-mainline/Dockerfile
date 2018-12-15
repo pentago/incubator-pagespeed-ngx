@@ -1,3 +1,4 @@
+# Repo: git@github.com:apache/incubator-pagespeed-ngx.git
 ARG ALPINE_VERSION=3.8
 
 ########################
@@ -79,7 +80,7 @@ FROM alpine:$ALPINE_VERSION AS nginx
 ARG NGX_PAGESPEED_TAG=v1.13.35.2-stable
 
 # Check http://nginx.org/en/download.html for the latest version.
-ARG NGINX_VERSION=1.15.6
+ARG NGINX_VERSION=1.15.7
 ARG NGINX_PGPKEY=520A9993A1C052F8
 ARG NGINX_BUILD_CONFIG="\
         --prefix=/etc/nginx \
@@ -97,34 +98,34 @@ ARG NGINX_BUILD_CONFIG="\
         --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
         --user=nginx \
         --group=nginx \
-        --with-http_ssl_module \
-        --with-http_realip_module \
-        --with-http_addition_module \
-        --with-http_sub_module \
-        --with-http_dav_module \
-        --with-http_flv_module \
-        --with-http_mp4_module \
-        --with-http_gunzip_module \
-        --with-http_gzip_static_module \
-        --with-http_random_index_module \
-        --with-http_secure_link_module \
-        --with-http_stub_status_module \
-        --with-http_auth_request_module \
-        --with-http_xslt_module=dynamic \
-        --with-http_image_filter_module=dynamic \
-        --with-http_geoip_module=dynamic \
         --with-threads \
-        --with-stream \
-        --with-stream_ssl_module \
-        --with-stream_ssl_preread_module \
-        --with-stream_realip_module \
-        --with-stream_geoip_module=dynamic \
-        --with-http_slice_module \
-        --with-mail \
-        --with-mail_ssl_module \
-        --with-compat \
         --with-file-aio \
         --with-http_v2_module \
+        --with-http_ssl_module \
+        --with-http_realip_module \
+		#--with-compat \
+		#--with-http_addition_module \
+		#--with-http_sub_module \
+		#--with-http_dav_module \
+		#--with-http_flv_module \
+		#--with-http_mp4_module \
+		#--with-http_gunzip_module \
+		#--with-http_gzip_static_module \
+		#--with-http_random_index_module \
+		#--with-http_secure_link_module \
+		#--with-http_stub_status_module \
+		#--with-http_auth_request_module \
+		#--with-http_xslt_module=dynamic \
+		#--with-http_image_filter_module=dynamic \
+		#--with-http_geoip_module=dynamic \
+		#--with-stream=dynamic \
+		#--with-stream_ssl_module \
+		#--with-stream_ssl_preread_module \
+		#--with-stream_realip_module \
+		#--with-stream_geoip_module \
+		#--with-http_slice_module \
+		#--with-mail=dynamic \
+		#--with-mail_ssl_module \
     "
 
 RUN apk add --no-cache \
@@ -180,13 +181,11 @@ RUN tar zxf ../nginx-${NGINX_VERSION}.tar.gz --strip-components=1 -C . && \
 RUN rm -rf /etc/nginx/html/ && \
     mkdir /etc/nginx/conf.d/ && \
     mkdir -p /usr/share/nginx/html/ && \
-    sed -i 's|^</body>|<p><a href="https://www.ngxpagespeed.com/"><img src="pagespeed.png" title="Nginx module for rewriting web pages to reduce latency and bandwidth" /></a></p>\n</body>|' html/index.html && \
     install -m644 html/index.html /usr/share/nginx/html/ && \
     install -m644 html/50x.html /usr/share/nginx/html/ && \
     ln -s ../../usr/lib/nginx/modules /etc/nginx/modules && \
-    strip /usr/sbin/nginx* \
-          /usr/lib/nginx/modules/*.so \
-    ;
+    strip /usr/sbin/nginx*
+#   	strip /usr/lib/nginx/modules/*.so \
 
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY conf/nginx.vh.default.conf /etc/nginx/conf.d/default.conf
@@ -199,22 +198,20 @@ COPY pagespeed.png /usr/share/nginx/html/
 FROM alpine:$ALPINE_VERSION
 LABEL maintainer="Nico Berlee <nico.berlee@on2it.net>" \
       version.mod-pagespeed="1.13.35.2" \
-      version.nginx="1.15.6" \
+      version.nginx="1.15.7" \
       version.ngx-pagespeed="1.13.35.2"
 
 COPY --from=pagespeed /usr/bin/envsubst /usr/local/bin
 COPY --from=nginx /usr/sbin/nginx /usr/sbin/nginx
-COPY --from=nginx /usr/lib/nginx/modules/ /usr/lib/nginx/modules/
+#COPY --from=nginx /usr/lib/nginx/modules/ /usr/lib/nginx/modules/
 COPY --from=nginx /etc/nginx /etc/nginx
 COPY --from=nginx /usr/share/nginx/html/ /usr/share/nginx/html/
 
 RUN apk --no-cache upgrade && \
-    scanelf --needed --nobanner --format '%n#p' /usr/sbin/nginx /usr/lib/nginx/modules/*.so /usr/local/bin/envsubst \
+    scanelf --needed --nobanner --format '%n#p' /usr/sbin/nginx /usr/local/bin/envsubst \
             | tr ',' '\n' \
             | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-            | xargs apk add --no-cache \
-    && \
-    apk add --no-cache tzdata
+            | xargs apk add --no-cache
 
 RUN addgroup -S nginx && \
     adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx && \
@@ -223,8 +220,9 @@ RUN addgroup -S nginx && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 
-EXPOSE 80
+EXPOSE 80 443
 
 STOPSIGNAL SIGTERM
 
 CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
+
